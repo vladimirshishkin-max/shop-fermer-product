@@ -1,10 +1,13 @@
 const router = require('express').Router();
 const c = require('../controllers/productController');
+const { authenticate, optionalAuth, requireRole } = require('../middleware/auth');
 
-router.get('/', c.list);
-router.get('/:id', c.getOne);
-router.post('/', c.create);
-router.put('/:id', c.update);
-router.delete('/:id', c.remove);
+const admin = [authenticate, requireRole('admin')];
+
+router.get('/', optionalAuth, c.list);
+router.get('/:id', optionalAuth, c.getOne);
+router.post('/', ...admin, c.create);
+router.put('/:id', ...admin, c.update);
+router.delete('/:id', ...admin, c.remove);
 
 module.exports = router;

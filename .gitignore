@@ -1,1 +1,7 @@
-.env 
+node_modules/
+.env
+data/
+*.log
+.DS_Store
+requests.http
+http-client.env.json

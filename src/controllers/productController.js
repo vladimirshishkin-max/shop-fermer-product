@@ -32,23 +32,26 @@ function parseProductBody(body = {}) {
   };
 }
 
+// скрытые товары видит только админ
 exports.list = (req, res) => {
   const { category_id, farm_id, search, include_inactive } = req.query;
+  const isAdmin = req.user?.role === 'admin';
   const rows = productModel.getAll({
     categoryId: category_id !== undefined ? parseId(category_id) : undefined,
     farmId: farm_id !== undefined ? parseId(farm_id) : undefined,
     search: typeof search === 'string' && search.trim() ? search.trim() : undefined,
-    includeInactive: include_inactive === 'true', // позже оставим только админу
+    includeInactive: isAdmin && include_inactive === 'true',
   });
   res.json(rows.map(toDto));
 };
 
+// ---
 exports.getOne = (req, res) => {
   const row = productModel.getById(parseId(req.params.id));
-  if (!row) throw new AppError(404, 'Товар не найден');
+  const isAdmin = req.user?.role === 'admin';
+  if (!row || (!row.is_active && !isAdmin)) throw new AppError(404, 'Товар не найден');
   res.json(toDto(row));
 };
-
 exports.create = (req, res) => {
   const row = productModel.create(parseProductBody(req.body));
   res.status(201).json(toDto(row));
